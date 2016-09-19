@@ -54,8 +54,29 @@ x
 
 gbm.result <- predict(gbmmodel, plm_test)
 confusionMatrix(plm_test$classe, gbm.result)$overall['Accuracy']
+-------------------------------------------------------------------------
+  
+  rpart_model <- train(plm_train$classe~.,data=plm_train,method="rpart")
+summary(rpart_model)
 
-
+# Variable importance
+# X                       stddev_roll_belt 
+# 38                              7 
+# var_roll_belt           var_total_accel_belt 
+# 7                              7 
+# amplitude_pitch_belt    avg_roll_belt 
+# 7                              7 
+# min_roll_forearm        avg_pitch_forearm 
+# 5                              4 
+# pitch_forearm           amplitude_yaw_arm 
+# 3                              3 
+# var_accel_arm           cvtd_timestamp02/12/2011 14:57 
+# 3                              2 
+# cvtd_timestamp05/12/2011 11:24          
+# avg_pitch_belt 
+# 2                                              2 
+# pitch_belt           raw_timestamp_part_1 
+# 2                              1 
 
 
 
