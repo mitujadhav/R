@@ -1,0 +1,69 @@
+plm_train<-read.csv("D:/My Stuff/Practical Machine learning/pml-training.csv")
+plm_test<-read.csv("D:/My Stuff/Practical Machine learning/pml-testing.csv")
+
+# Random Forest
+library(caret)
+modFit<-train(plm_train$classe ~.,data=plm_train,method="rf", prox=TRUE)
+modFit
+getTree(modFit$finalModel,k=2)
+rf_predict<-predict(modFit,newdata = plm_test)
+imp_var <- varImp(modFit, scale = FALSE) 
+
+# GLM
+model <- train(plm_train$classe~.,data=plm_train,method="glm",family="binomial")
+missClass = function(values,prediction){sum(((prediction > 0.5)*1) != values)/length(values)}
+missClass(trainSA$chd, predict(model, trainSA))
+missClass(testSA$chd, predict(model, testSA))
+
+# SVM
+with(plm_train, table(plm_train$classe, plm_train$user_name))
+
+----------------------------------------------------------------------
+
+gbmmodel <- (train(plm_train$classe~., data=plm_train, method="gbm"))
+gbmImp <- varImp(gbmmodel, scale = FALSE)
+gbmImp
+ 
+# gbm variable importance
+# only 20 most important variables shown (out of 6952)
+# Overall
+# X                              400.433
+# avg_roll_dumbbell               22.035
+# min_roll_forearm                 9.534
+# var_accel_dumbbell               5.020
+# max_roll_dumbbell                4.111
+# kurtosis_yaw_arm-1.18751         0.000
+# kurtosis_yaw_arm-1.00968         0.000
+# kurtosis_picth_arm-0.98893       0.000
+# kurtosis_picth_arm-1.26305       0.000
+# skewness_pitch_dumbbell0.0169    0.000
+# skewness_pitch_arm0.96238        0.000
+# kurtosis_roll_belt-1.629928      0.000
+# skewness_roll_belt.11.069879     0.000
+# skewness_roll_forearm0.3081      0.000
+# skewness_roll_dumbbell-0.0563    0.000
+# skewness_roll_arm0.93328         0.000
+# kurtosis_roll_arm-1.04555        0.000
+# kurtosis_picth_dumbbell-0.5850   0.000
+# kurtosis_picth_arm-1.23878       0.000
+# skewness_pitch_forearm1.2207     0.000
+
+plm_train_imp<-plm_train[,c(1,12,69,70,71,72,73,88,90,91,93,103,104,128,129,134)]
+x<-summary(gbmmodel)
+x
+
+gbm.result <- predict(gbmmodel, plm_test)
+confusionMatrix(plm_test$classe, gbm.result)$overall['Accuracy']
+
+
+
+
+
+
+
+
+
+
+
+
+
