@@ -1,6 +1,19 @@
+
 plm_train<-read.csv("D:/My Stuff/Practical Machine learning/pml-training.csv")
 plm_test<-read.csv("D:/My Stuff/Practical Machine learning/pml-testing.csv")
 
+
+for(i in seq(1:160))
+{
+  print(paste("Column ",i))
+  print(table(is.na(plm_train[,i])))
+  
+}
+
+complete_train<-plm_train[complete.cases(plm_train),]
+
+---------------------------------------------------------------------
+  
 # Random Forest
 library(caret)
 modFit<-train(plm_train$classe ~.,data=plm_train,method="rf", prox=TRUE)
@@ -20,6 +33,7 @@ with(plm_train, table(plm_train$classe, plm_train$user_name))
 
 ----------------------------------------------------------------------
 
+library(caret)
 gbmmodel <- (train(plm_train$classe~., data=plm_train, method="gbm"))
 gbmImp <- varImp(gbmmodel, scale = FALSE)
 gbmImp
@@ -56,7 +70,7 @@ gbm.result <- predict(gbmmodel, plm_test)
 confusionMatrix(plm_test$classe, gbm.result)$overall['Accuracy']
 -------------------------------------------------------------------------
   
-  rpart_model <- train(plm_train$classe~.,data=plm_train,method="rpart")
+rpart_model <- train(plm_train$classe~.,data=plm_train,method="rpart")
 summary(rpart_model)
 
 # Variable importance
@@ -78,6 +92,191 @@ summary(rpart_model)
 # pitch_belt           raw_timestamp_part_1 
 # 2                              1 
 
+# ***************************************************************************
+
+library(caret)
+modFit<-train(complete_train$classe ~.,data=complete_train,method="rf", prox=TRUE)
+modFit
+getTree(modFit$finalModel,k=2)
+rf_predict<-predict(modFit,newdata = plm_test)
+imp_var <- varImp(modFit, scale = FALSE) 
+
+# GLM
+model <- train(complete_train$classe~.,data=complete_train,method="glm",family="binomial")
+missClass = function(values,prediction){sum(((prediction > 0.5)*1) != values)/length(values)}
+missClass(trainSA$chd, predict(model, trainSA))
+missClass(testSA$chd, predict(model, testSA))
+
+# SVM
+with(plm_train, table(complete_train$classe, complete_train$user_name))
+
+----------------------------------------------------------------------
+  
+library(caret)
+gbmmodel <- (train(complete_train$classe~., data=complete_train, method="gbm"))
+gbmImp <- varImp(gbmmodel, scale = FALSE)
+gbmImp
+
+install.packages("nnet")
+library(nnet)
+mod <- multinom(plm_reduced$classe~., data = plm_reduce)
+
+
+plm_reduced<-plm_train[,-c(18,19,21,22,24,25,27:36,50:59,75:83,93,94,96,97,99,100,103:112,131,132,134,135,137:138,141:150)]
+
+plm_reduced1<-plm_reduced[,-c(14,17,20,54,57,60,76,79,82)]
+
+plm_reduced1$user_name<-as.numeric(plm_reduced1$user_name)
+plm_reduced1$cvtd_timestamp<-as.numeric(plm_reduced1$cvtd_timestamp)
+plm_reduced1$new_window<-as.numeric(plm_reduced1$new_window)
+plm_reduced1$kurtosis_roll_belt<-as.numeric(plm_reduced1$kurtosis_roll_belt)
+plm_reduced1$kurtosis_picth_belt<-as.numeric(plm_reduced1$kurtosis_picth_belt)
+plm_reduced1$skewness_roll_belt<-as.numeric(plm_reduced1$skewness_roll_belt)
+plm_reduced1$skewness_roll_belt.1<-as.numeric(plm_reduced1$skewness_roll_belt.1)
+plm_reduced1$max_yaw_belt<-as.numeric(plm_reduced1$max_yaw_belt)
+plm_reduced1$min_yaw_belt<-as.numeric(plm_reduced1$min_yaw_belt)
+plm_reduced1$kurtosis_roll_arm<-as.numeric(plm_reduced1$kurtosis_roll_arm)
+plm_reduced1$kurtosis_picth_arm<-as.numeric(plm_reduced1$kurtosis_picth_arm)
+plm_reduced1$kurtosis_yaw_arm<-as.numeric(plm_reduced1$kurtosis_yaw_arm)
+plm_reduced1$skewness_roll_arm<-as.numeric(plm_reduced1$skewness_roll_arm)
+plm_reduced1$skewness_pitch_arm<-as.numeric(plm_reduced1$skewness_pitch_arm)
+plm_reduced1$skewness_yaw_arm<-as.numeric(plm_reduced1$skewness_yaw_arm)
+plm_reduced1$kurtosis_roll_dumbbell<-as.numeric(plm_reduced1$kurtosis_roll_dumbbell)
+plm_reduced1$kurtosis_picth_dumbbell<-as.numeric(plm_reduced1$kurtosis_picth_dumbbell)
+plm_reduced1$kurtosis_roll_forearm<-as.numeric(plm_reduced1$kurtosis_roll_forearm)
+plm_reduced1$kurtosis_picth_forearm<-as.numeric(plm_reduced1$kurtosis_picth_forearm)
+plm_reduced1$skewness_roll_dumbbell<-as.numeric(plm_reduced1$skewness_roll_dumbbell)
+plm_reduced1$skewness_pitch_dumbbell<-as.numeric(plm_reduced1$skewness_pitch_dumbbell)
+plm_reduced1$skewness_roll_forearm<-as.numeric(plm_reduced1$skewness_roll_forearm)
+plm_reduced1$skewness_pitch_forearm<-as.numeric(plm_reduced1$skewness_pitch_forearm)
+plm_reduced1$max_yaw_dumbbell<-as.numeric(plm_reduced1$max_yaw_dumbbell)
+plm_reduced1$max_yaw_forearm<-as.numeric(plm_reduced1$max_yaw_forearm)
+plm_reduced1$min_yaw_dumbbell<-as.numeric(plm_reduced1$min_yaw_dumbbell)
+plm_reduced1$min_yaw_forearm<-as.numeric(plm_reduced1$min_yaw_forearm)
+plm_reduced1$classe<-as.numeric(plm_reduced1$classe)
+
+FSelector::linear.correlation(plm_reduced1$classe~.,plm_reduced1)
+
+# OUTPUT
+
+# attr_importance
+# X                          0.9741802467
+# user_name                  0.0131649391
+# raw_timestamp_part_1       0.0236427091
+# raw_timestamp_part_2       0.0156613568
+# cvtd_timestamp             0.1076910340
+# new_window                 0.0057431271
+# num_window                 0.0227115918
+# roll_belt                  0.0621513426
+# pitch_belt                 0.0107516010
+# yaw_belt                   0.0136011048
+# total_accel_belt           0.0771561662
+# kurtosis_roll_belt         0.0009134417
+# kurtosis_picth_belt        0.0079547569
+# skewness_roll_belt         0.0011720339
+# skewness_roll_belt.1       0.0003063952
+# max_yaw_belt               0.0071175276
+# min_yaw_belt               0.0071175276
+# gyros_belt_x               0.0115895498
+# gyros_belt_y               0.0187492178
+# gyros_belt_z               0.0151227826
+# accel_belt_x               0.0063069314
+# accel_belt_y               0.0015312437
+# accel_belt_z               0.0793872759
+# magnet_belt_x              0.0183995965
+# magnet_belt_y              0.2903490682
+# magnet_belt_z              0.1800306214
+# roll_arm                   0.0876958401
+# pitch_arm                  0.1776848826
+# yaw_arm                    0.0492630395
+# total_accel_arm            0.1258251832
+# gyros_arm_x                0.0033195422
+# gyros_arm_y                0.0179227064
+# gyros_arm_z                0.0084477066
+# accel_arm_x                0.2425926172
+# accel_arm_y                0.0870538987
+# accel_arm_z                0.0445529804
+# magnet_arm_x               0.2959635721
+# magnet_arm_y               0.2566701750
+# magnet_arm_z               0.1498429260
+# kurtosis_roll_arm          0.0067302724
+# kurtosis_picth_arm         0.0026963762
+# kurtosis_yaw_arm           0.0043132708
+# skewness_roll_arm          0.0055515588
+# skewness_pitch_arm         0.0050114827
+# skewness_yaw_arm           0.0087203620
+# roll_dumbbell              0.0425073033
+# pitch_dumbbell             0.0862350775
+# yaw_dumbbell               0.0093144427
+# kurtosis_roll_dumbbell     0.0041032238
+# kurtosis_picth_dumbbell    0.0063394819
+# skewness_roll_dumbbell     0.0046800639
+# skewness_pitch_dumbbell    0.0047431499
+# max_yaw_dumbbell           0.0046790576
+# min_yaw_dumbbell           0.0046790576
+# total_accel_dumbbell       0.0519633122
+# gyros_dumbbell_x           0.0058488248
+# gyros_dumbbell_y           0.0382605676
+# gyros_dumbbell_z           0.0064802386
+# accel_dumbbell_x           0.1186463203
+# accel_dumbbell_y           0.0158570644
+# accel_dumbbell_z           0.0727393323
+# magnet_dumbbell_x          0.0666360945
+# magnet_dumbbell_y          0.0026623264
+# magnet_dumbbell_z          0.1498691916
+# roll_forearm               0.0252010973
+# pitch_forearm              0.3438258280
+# yaw_forearm                0.0455123108
+# kurtosis_roll_forearm      0.0064360681
+# kurtosis_picth_forearm     0.0002087720
+# skewness_roll_forearm      0.0038389493
+# skewness_pitch_forearm     0.0068624465
+# max_yaw_forearm            0.0068492361
+# min_yaw_forearm            0.0068492361
+# total_accel_forearm        0.1545383505
+# gyros_forearm_x            0.0202074822
+# gyros_forearm_y            0.0100783439
+# gyros_forearm_z            0.0057230541
+# accel_forearm_x            0.1886853999
+# accel_forearm_y            0.0225533252
+# accel_forearm_z            0.0009977051
+# magnet_forearm_x           0.1821333559
+# magnet_forearm_y           0.1078377426
+# magnet_forearm_z           0.0452970115
+
+
+table(plm_reduced1$classe)
+a<-plm_reduced1[which(plm_reduced1$user_name==1),]
+b<-plm_reduced1[which(plm_reduced1$user_name==2),]
+c<-plm_reduced1[which(plm_reduced1$user_name==3),]
+d<-plm_reduced1[which(plm_reduced1$user_name==4),]
+
+
+FSelector::linear.correlation(a$classe~.,a)
+FSelector::linear.correlation(b$classe~.,b)
+FSelector::linear.correlation(c$classe~.,c)
+FSelector::linear.correlation(d$classe~.,d)
+
+
+library(caret)
+svmFit <- train(plm_reduced1$classe ~ ., data = plm_reduced1, 
+                method = "svmRadial", 
+                trControl = fitControl, 
+                preProc = c("center", "scale"),
+                tuneLength = 8,
+                metric = "ROC")
+
+rdaFit <- train(plm_reduced1$classe ~ ., data = plm_reduced1, 
+                method = "rda", 
+                trControl = fitControl, 
+                tuneLength = 4,
+                metric = "ROC")
+
+rpartFull <- rpart(plm_reduced1$classe ~ ., data = plm_reduced1)
+rdaGrid = data.frame(gamma = (0:4)/4, lambda = 3/4)
+set.seed(123)
+
+adaFit <- train(plm_reduced1$classe ~ .,data = plm_reduced1, method = "ada")
 
 
 
